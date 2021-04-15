@@ -1,0 +1,41 @@
+stages:
+  download_data:
+    cmd: bash src/download_data.sh
+    deps:
+      - src/download_data.sh
+    outs:
+      - data/src/
+  prepare_data:
+    cmd: python src/prepare_data.py data/src/ data/prepared/
+    deps:
+      - src/prepare_data.py
+      - data/src/
+    outs:
+      - data/prepared/
+  split_data:
+    cmd: python src/split_data.py data/prepared/ data/splits/
+    deps:
+      - src/split_data.py
+      - data/prepared/
+    outs:
+      - data/splits/
+  train:
+    cmd: python src/train.py --data data/prepared/ --splits data/splits/ --output-file data/models/best.pkl
+    deps:
+      - src/train.py
+      - data/prepared/
+      - data/splits/
+    outs:
+      - data/models/best.pkl
+    params:
+      - train
+  test:
+    cmd: python src/test.py --data data/prepared/ --splits data/splits/ --model-file data/models/best.pkl --metrics-file metrics.json
+    deps:
+      - src/test.py
+      - data/prepared/
+      - data/models/best.pkl
+      - data/splits/
+    metrics:
+      - metrics.json:
+          cache: false

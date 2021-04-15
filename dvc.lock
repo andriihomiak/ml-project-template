@@ -1,0 +1,89 @@
+schema: '2.0'
+stages:
+  download_data:
+    cmd: bash src/download_data.sh
+    deps:
+    - path: src/download_data.sh
+      md5: 4a07e15b90beac6fa5f623345b699ef2
+      size: 72
+    outs:
+    - path: data/src/
+      md5: 9db8a902f8a6aa92e7abc47225713585.dir
+      size: 12
+      nfiles: 1
+  prepare_data:
+    cmd: python src/prepare_data.py data/src/ data/prepared/
+    deps:
+    - path: data/src/
+      md5: 9db8a902f8a6aa92e7abc47225713585.dir
+      size: 12
+      nfiles: 1
+    - path: src/prepare_data.py
+      md5: 65e89bdf64ebd4eb61e7f156d917231d
+      size: 536
+    outs:
+    - path: data/prepared/
+      md5: a1cfd6afed1b45ccdfd8bb0809f921d2.dir
+      size: 13
+      nfiles: 1
+  split_data:
+    cmd: python src/split_data.py data/prepared/ data/splits/
+    deps:
+    - path: data/prepared/
+      md5: a1cfd6afed1b45ccdfd8bb0809f921d2.dir
+      size: 13
+      nfiles: 1
+    - path: src/split_data.py
+      md5: 2dcd7088b48fbdc814806ae4d48ee862
+      size: 612
+    outs:
+    - path: data/splits/
+      md5: 998990b4c49643e6d3b2c70a145656e4.dir
+      size: 12
+      nfiles: 3
+  test:
+    cmd: python src/test.py --data data/prepared/ --splits data/splits/ --model-file
+      data/models/best.pkl --metrics-file metrics.json
+    deps:
+    - path: data/models/best.pkl
+      md5: c515cb3a7b87d6bd0f434d39278a2bda
+      size: 11
+    - path: data/prepared/
+      md5: a1cfd6afed1b45ccdfd8bb0809f921d2.dir
+      size: 13
+      nfiles: 1
+    - path: data/splits/
+      md5: 998990b4c49643e6d3b2c70a145656e4.dir
+      size: 12
+      nfiles: 3
+    - path: src/test.py
+      md5: 5cd47ae58ac34156cf1da73089fbc60a
+      size: 736
+    outs:
+    - path: metrics.json
+      md5: 66fbc42250f2fc2fe3c1e9ec69b70833
+      size: 17
+  train:
+    cmd: python src/train.py --data data/prepared/ --splits data/splits/ --output-file
+      data/models/best.pkl
+    deps:
+    - path: data/prepared/
+      md5: a1cfd6afed1b45ccdfd8bb0809f921d2.dir
+      size: 13
+      nfiles: 1
+    - path: data/splits/
+      md5: 998990b4c49643e6d3b2c70a145656e4.dir
+      size: 12
+      nfiles: 3
+    - path: src/train.py
+      md5: c0d3376a6a35b88b561efe4d6eb5e449
+      size: 739
+    params:
+      params.yaml:
+        train:
+          arg1: 1
+          arg2: false
+    outs:
+    - path: data/models/best.pkl
+      md5: c515cb3a7b87d6bd0f434d39278a2bda
+      size: 11
